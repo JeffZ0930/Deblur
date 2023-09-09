@@ -2,48 +2,60 @@
 
 import cv2
 import numpy as np
+import torch
+import os
+from torchvision import transforms
+from torchvision.datasets import ImageFolder
+from torch.utils.data import DataLoader
 
-def save(path, image, jpg_quality=None): #, png_compression=None
-  '''
-  persist :image: object to disk. if path is given, load() first.
-  jpg_quality: for jpeg only. 0 - 100 (higher means better). Default is 95.
-  png_compression: For png only. 0 - 9 (higher means a smaller size and longer compression time).
-                  Default is 3.
-  '''
+def jpeg_compression(image, quality=50):
+    # Convert PyTorch tensor to NumPy array
+    image_numpy = (image * 255).numpy().astype(np.uint8)
+    print(image_numpy.shape)
+    _, compressed_img = cv2.imencode('.jpg', image_numpy, [cv2.IMWRITE_JPEG_QUALITY, quality])
 
-  if jpg_quality:
+    result = cv2.imdecode(compressed_img, cv2.IMREAD_GRAYSCALE)
 
-    cv2.imwrite(path, image, [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
-#   elif png_compression:
-#     cv2.imwrite(path, image, [int(cv2.IMWRITE_PNG_COMPRESSION), png_compression])
-  else:
-    cv2.imwrite(path, image)
-    
+    # Normalize the image to the range [0, 1]
+    result = result / 255.0
+
+    result = torch.from_numpy(result).float()
+
+    return result
 
 def resize(path, image, dim):
     # resize imagek
     resized = cv2.resize(image, dim, interpolation = cv2.INTER_CUBIC)
     cv2.imwrite(path, resized)
 
-def main():
-    train_img = cv2.imread("my_test/original_clear.jpg")
-    test_img = cv2.imread("my_test/original_blur.jpeg")
-    train_dim = (train_img.shape[1], train_img.shape[0])
-    test_dim = (test_img.shape[1], test_img.shape[0])
+def main(): 
+    # batch_size = 64
+    # train_dataset = ImageFolder(root="./mnist_clear", transform=transforms.Compose([transforms.ToTensor()]))
 
-    outpath_jpg = "my_test/converted_blur.jpg"
+    # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    
+    # for batch in train_loader:
+    #     images, _ = batch
+    #     for img in images:
+    #         compressed_img = jpeg_compression(img, 1)
+    #         # save the compressed image
+    #         cv2.imwrite("./mnist_blur", compressed_img)
+    input_folder = "./mnist_clear"
+    output_folder = "./mnist_blur"
+    input_imgs = os.listdir(input_folder)
 
-    resize(outpath_jpg, train_img, test_dim)
+    for img_file in input_imgs:
+        input_path = os.path.join(input_folder, img_file)
+        img = cv2.imread(input_path)
+    
+        output_path = os.path.join(output_folder, img_file)
 
-    img = cv2.imread(outpath_jpg)
-    #display original image
-    cv2.imshow('My JPG Conversion', img)
-    cv2.waitKey(0)
+        # save the image in JPEG format with 1% quality
+        cv2.imwrite(output_path, img, [cv2.IMWRITE_JPEG_QUALITY, 1])
 
-    # Gaussian = cv2.GaussianBlur(image, (13, 13), 6)
-    # cv2.imshow('Gaussian Blurring', Gaussian)
 
-    save(outpath_jpg, img, jpg_quality = 1)
+            
+
 
 
 if __name__ == "__main__":
