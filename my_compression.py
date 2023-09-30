@@ -40,18 +40,24 @@ def main():
     #         compressed_img = jpeg_compression(img, 1)
     #         # save the compressed image
     #         cv2.imwrite("./mnist_blur", compressed_img)
-    input_folder = "./mnist_clear"
-    output_folder = "./mnist_blur"
-    input_imgs = os.listdir(input_folder)
+    mnist_input_path = "./mnist_clear"
+    mnist_output_path = "./mnist_blur"
+    label_folder = os.listdir(mnist_input_path)
 
-    for img_file in input_imgs:
-        input_path = os.path.join(input_folder, img_file)
-        img = cv2.imread(input_path)
-    
-        output_path = os.path.join(output_folder, img_file)
+    for label in label_folder:
+        print("Bluring label " + label)
+        label_input_path = os.path.join(mnist_input_path, label)
+        label_output__path = os.path.join(mnist_output_path, label)
+        imgs = os.listdir(label_input_path)
 
-        # save the image in JPEG format with 1% quality
-        cv2.imwrite(output_path, img, [cv2.IMWRITE_JPEG_QUALITY, 1])
+        for img_file in imgs:
+            img_input_path = os.path.join(label_input_path, img_file)
+            img = cv2.imread(img_input_path)
+        
+            output_path = os.path.join(label_output__path, img_file)
+
+            # save the image in JPEG format with 1% quality
+            cv2.imwrite(output_path, img, [cv2.IMWRITE_JPEG_QUALITY, 1])
 
 
             
